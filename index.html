@@ -56,7 +56,6 @@
                 if (response.ok) {
                     document.getElementById('status').textContent = "Canvas is UP";
                     document.getElementById('status').className = "up";
-                    document.getElementById('message').innerHTML = "You can now access <a href='https://stchas.instructure.com' style='color:#90b0ff'>Canvas</a>";
                 }
             })
             .catch(() => {}); // File doesn't exist → stays DOWN
