@@ -3,33 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canvas Status</title>
+    <title>St. Charles Canvas Status</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
             text-align: center;
             margin: 0;
             padding: 0;
-            background: #0f0f0f;
-            color: #e0e0e0;
             height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
-        h1 {
-            margin-bottom: 10px;
-            color: #ffffff;
-        }
         #status {
-            font-size: 52px;
+            font-size: 60px;
             font-weight: bold;
-            padding: 30px 50px;
-            border-radius: 12px;
-            margin: 20px;
-            min-width: 420px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            padding: 40px 60px;
+            border-radius: 15px;
+            margin: 30px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.7);
         }
         .up {
             background: #006400;
@@ -39,78 +34,41 @@
             background: #8B0000;
             color: #FF9999;
         }
-        button {
-            padding: 14px 32px;
-            font-size: 17px;
-            cursor: pointer;
-            background: #1e90ff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            margin: 15px;
-        }
-        button:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
-        #details {
-            margin-top: 20px;
-            max-width: 620px;
-            font-size: 16px;
-            line-height: 1.5;
-        }
         .last-check {
-            font-size: 14px;
-            color: #888;
-            margin-top: 15px;
+            font-size: 16px;
+            color: #777;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Canvas (Instructure) Status</h1>
-    <div id="status">Checking...</div>
-    <button id="refreshBtn">Refresh Now</button>
-    <div id="details"></div>
+    <h1>St. Charles Canvas Status</h1>
+    
+    <div id="status" class="down">Canvas is DOWN</div>
+    
+    <p id="message">Maintenance in progress — check back later.</p>
     <div class="last-check" id="lastCheck"></div>
 
     <script>
-        let lastCheckTime = 0;
-        const COOLDOWN_MS = 15000; // 15 seconds minimum between manual checks
-
-        async function checkStatus() {
-            const statusDiv = document.getElementById('status');
-            const detailsDiv = document.getElementById('details');
-            const lastCheckDiv = document.getElementById('lastCheck');
-            const btn = document.getElementById('refreshBtn');
-
-            const now = Date.now();
-            if (now - lastCheckTime < COOLDOWN_MS) {
-                return; // Prevent spam
-            }
-
-            lastCheckTime = now;
-            btn.disabled = true;
-            statusDiv.textContent = "Checking...";
-            statusDiv.className = "";
-
-            try {
-                const proxy = 'https://api.allorigins.win/raw?url=';
-                const url = 'https://status.instructure.com/';
-                const response = await fetch(proxy + encodeURIComponent(url));
-                const text = await response.text();
-
-                const isInMaintenance = /maintenance|under maintenance|scheduled maintenance|maintenance mode/i.test(text);
-
-                if (isInMaintenance) {
-                    statusDiv.textContent = "Canvas is DOWN";
-                    statusDiv.className = "down";
-                    detailsDiv.innerHTML = `<p>Official status shows Canvas is currently in maintenance mode.</p>`;
-                } else {
-                    statusDiv.textContent = "Canvas is UP";
-                    statusDiv.className = "up";
-                    detailsDiv.innerHTML = `<p>No maintenance detected.</p>`;
+        // Check if canvasisup file exists (GitHub Pages / static hosting)
+        fetch('canvasisup', { method: 'HEAD', cache: 'no-cache' })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('status').textContent = "Canvas is UP";
+                    document.getElementById('status').className = "up";
+                    document.getElementById('message').innerHTML = "You can now access <a href='https://stchas.instructure.com' style='color:#90b0ff'>Canvas</a>";
                 }
-            } catch (err) {
-                statusDiv.textContent = "Check Failed";
-                statusDiv.className = "down";
-                detailsDiv.innerHTML = `<p>Could not contact status page.<br>Visit <a href="https://status.in
+            })
+            .catch(() => {}); // File doesn't exist → stays DOWN
+
+        // Show last modified time of the status file if available
+        fetch('canvasisup', { method: 'HEAD' })
+            .then(r => {
+                if (r.ok) {
+                    const lm = r.headers.get('Last-Modified');
+                    if (lm) document.getElementById('lastCheck').textContent = `Became available: ${lm}`;
+                }
+            });
+    </script>
+</body>
+</html>
